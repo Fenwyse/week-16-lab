@@ -49,6 +49,15 @@ jobs:
         run: |
           npm run lint
 
+      - name: run supply chain scanning
+        working-directory: app
+        run:
+          npm audit
+
+      - name: run unit testing
+        working-directory: app
+        run:
+          npm run test
       # TODO: add supply chain scanning
 
       # TODO: add unit testing
