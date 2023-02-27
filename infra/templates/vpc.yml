@@ -1,0 +1,89 @@
+Description: Networking architecture
+
+Parameters:
+  VpcCidr:
+    Description: CIDR block for the VPC
+    Type: String
+  PubSubnetACidr:
+    Type: String
+  StudentName:
+    Type: String
+
+Resources:
+# VPC
+  MyTestVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VpcCidr
+      Tags:
+        - Key: Name
+          Value: !Sub "${StudentName}-vpc"
+
+# PubSubnetA
+  PubSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref MyTestVPC
+      CidrBlock: !Ref PubSubnetACidr
+      AvailabilityZone: "eu-west-2a"
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub "${StudentName}-pub-subnet-a"
+
+#PvtSubnetA
+  PvtSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcID: !Ref MyTestVPC
+      CidrBlock: !Ref PvtSubnetACidr
+      AvailabilityZone: "eu-west-2a"
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: !Sub "{StudentName}-pub-subnet-a"
+
+# InternetGateway:
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub "${StudentName}-igw"
+
+# VPC Gateway Attachement
+  VpcGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref InternetGateway
+      VpcId: !Ref MyTestVPC
+
+# SubnetRouteTableAssociationA
+#  PubSubnetRouteTableAssociation:
+#    Type: AWS::EC2::SubnetRouteTableAssociation
+#    Properties:
+#      RouteTableId: !Ref PublicRouteA
+#      SubnetId: !Ref PubSubnetA
+
+# Route Table Internet Gateway
+  PubRouteA:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub ${StudentName}-pub-route-a
+      VpcId: !Ref MyTestVPC
+# Public Route
+  PublicRouteA:
+    Type: AWS::EC2::Route
+    DependsOn: InternetGateway
+    Properties:
+      RouteTableId: !Ref PubRouteA
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+# EC2
+#  Ec2Instance:
+#    Type: AWS::EC2::Instance
+#    Properties:
+#      ImageId: !FindInMap
